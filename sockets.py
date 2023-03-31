@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# 
+# some parts of the code was taken from: https://github.com/abramhindle/WebSocketsExamples/blob/master/broadcaster.py
 #
 import flask
 from flask import Flask, request
