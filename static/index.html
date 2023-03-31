@@ -36,9 +36,11 @@ var H = canvas.height = window.innerHeight-50;
 var wscounter = 0;
 var socket;
 
+
 function debug(str) {
-    var debugDiv = document.getElementById('debug');
-    debugDiv.innerHTML = "" + str;
+    // commented it out becasue it was printing messages on the top of the screen
+    // var debugDiv = document.getElementById('debug');
+    // debugDiv.innerHTML = "" + str;
 }
 debug("Test");
 
@@ -54,7 +56,8 @@ function drawCircle(context,entity) {
         //moveTo(x,y);
         fillStyle = entity["colour"];
         strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2.0 * Math.PI, false);  
+        // changed the radius of the circle here
+        arc(x, y, (entity["radius"])?entity["radius"]:80, 0, 2.0 * Math.PI, false);  
         stroke();                                
     }
 }
@@ -121,11 +124,18 @@ function getPosition(e) {
 	}
 }
 
+
 function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just modified!
+    // creating a new object here that can be stored in a key value form
+    var mainObject = {};
+    // defining the value of a given key in the object
+    mainObject[entity] = data;
+    socket.send(JSON.stringify(mainObject));
 }
+
 var counter = 0;
 function addEntityWithoutName(data) {
     var name = "X"+(counter++)%100;
@@ -230,17 +240,17 @@ mouse = (function() {
 
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
+// changing the radius and the colour of the circles that are being drawn on the canvas
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'white', 'radius': 80});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'yellow', 'radius': 80});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':'blue', 'radius': 30});
 });
 
 
@@ -254,6 +264,9 @@ function wsSetup() {
     socket = new WebSocket(url);
     socket.onopen = function() {
         //XXX: TODO What are you going to do here?
+        console.log("Success: Socket Opened!");
+        debug("Success: Socket Opened!");
+
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -261,7 +274,13 @@ function wsSetup() {
     socket.onmessage = function(msg) {  
         try {
             debug("WebSocket Recv:" + msg.data);
-            //XXX: TODO What are you going to do here?            
+            //XXX: TODO What are you going to do here?
+            const info = JSON.parse(msg.data) 
+            drawNextFrame()   
+            for (const each in info)
+            {
+                world[each] = info[each]
+            }        
         } catch (e) {
             alert("socket on message: " + e);
         }
@@ -270,9 +289,6 @@ function wsSetup() {
 
 wsSetup();
 
-
-
-
 // 30 frames per second
 setInterval( update, 1000/30.0);
 
@@ -280,3 +296,4 @@ setInterval( update, 1000/30.0);
     </script>
 </body>
 </html>
+
